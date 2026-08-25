@@ -29,6 +29,13 @@ BOSS_INTERVAL = 5
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Zombie Echo: Those Left in the Dark")
+
+try:
+    LOGO_IMAGE = pygame.image.load(os.path.join(ASSET_DIR, "logo.png")).convert_alpha()
+    pygame.display.set_icon(LOGO_IMAGE)
+except (pygame.error, OSError):
+    LOGO_IMAGE = None
+
 clock = pygame.time.Clock()
 
 C_BG = (25, 28, 35)
@@ -1052,6 +1059,10 @@ class Game:
         self.state = "MENU"
         self.sound = SoundManager()
         self.light_map = pygame.Surface((WIDTH, HEIGHT))
+        self.menu_logo = pygame.transform.smoothscale(LOGO_IMAGE, (150, 150)) if LOGO_IMAGE else None
+        self.hud_logo = pygame.transform.smoothscale(LOGO_IMAGE, (46, 46)) if LOGO_IMAGE else None
+        if self.hud_logo:
+            self.hud_logo.set_alpha(155)
         pygame.mouse.set_visible(False)
         self.reset_game()
 
@@ -1819,6 +1830,9 @@ class Game:
             switch_txt = FONT_SM.render("Mouse wheel / 1-7: switch weapon", True, (150, 155, 165))
             screen.blit(switch_txt, (20, HEIGHT - 30))
 
+        if self.hud_logo:
+            screen.blit(self.hud_logo, (WIDTH - 58, HEIGHT - 58))
+
         for item in self.items:
             if item.type in WEAPON_STATS and self.player.pos.distance_to(item.pos) < 60:
                 p_txt = FONT_MD.render(f"Press E: {item.type}", True, C_WHITE)
@@ -1957,6 +1971,9 @@ class Game:
 
         t_surf = FONT_LG.render(title, True, C_RED if self.state == "GAMEOVER" else C_WHITE)
         s_surf = FONT_MD.render(subtitle, True, C_WHITE)
+
+        if self.state == "MENU" and self.menu_logo:
+            screen.blit(self.menu_logo, (WIDTH / 2 - self.menu_logo.get_width() / 2, HEIGHT / 2 - 245))
 
         screen.blit(t_surf, (WIDTH / 2 - t_surf.get_width() / 2, HEIGHT / 2 - 60))
         screen.blit(s_surf, (WIDTH / 2 - s_surf.get_width() / 2, HEIGHT / 2 + 20))
