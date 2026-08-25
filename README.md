@@ -1,5 +1,7 @@
 # Zombie Echo: Those Left in the Dark
 
+![Zombie Echo logo](assets/logo.png)
+
 Sade dark temalı, hızlı tempolu bir Pygame arena-aksiyon oyunu.
 
 ## Çalıştırma
@@ -40,6 +42,7 @@ artifact'ini indirip `Zombie Echo.app` dosyasını doğrudan açabilir.
 - Daha kısa bekleme süreleri ve hızlı dalga temposu
 - Duvarları dolaşan, oyuncunun hareketini öngören ve birbirinden ayrılan gelişmiş düşman davranışları
 - Sade daire/şekil görsel dili, kısa mermi izleri ve koyu harita dokusu
+- Oyuncuda 250 px tam görüş + iki adet 50 px geçiş bandı; harita lambalarında 300 px katmanlı ışık
 - Oyun boyunca döngüde çalan arka plan müziği
 - Yeni pickup, seçim, hata, loot ve yakın saldırı sesleri
 

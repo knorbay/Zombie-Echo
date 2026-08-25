@@ -3,7 +3,6 @@ import math
 import random
 import sys
 import os
-import numpy as np
 
 BASE_DIR = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
 ASSET_DIR = os.path.join(BASE_DIR, "assets")
@@ -32,7 +31,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Zombie Echo: Those Left in the Dark")
 clock = pygame.time.Clock()
 
-C_BG = (7, 9, 12)
+C_BG = (25, 28, 35)
 C_WHITE = (240, 240, 240)
 C_BLACK = (0, 0, 0)
 C_RED = (220, 40, 40)
@@ -44,8 +43,8 @@ C_ORANGE = (255, 120, 30)
 C_PURPLE = (150, 50, 200)
 C_ACID = (100, 255, 50)
 C_CYAN = (80, 220, 255)
-C_WALL = (20, 24, 31)
-C_WALL_TOP = (34, 41, 54)
+C_WALL = (43, 50, 63)
+C_WALL_TOP = (63, 74, 93)
 
 try:
     FONT_SM = pygame.font.SysFont("trebuchetms", 18, True)
@@ -97,23 +96,31 @@ class SoundManager:
                 sound.play()
 
 
-def build_vignette(w, h, strength=140, inner_radius=0.55):
-    surf = pygame.Surface((w, h), pygame.SRCALPHA)
-    surf.fill((0, 0, 0, 255))
-    cx, cy = w / 2, h / 2
-    maxdist = math.hypot(cx, cy)
-    yy, xx = np.mgrid[0:h, 0:w]
-    dist = np.sqrt((xx - cx) ** 2 + (yy - cy) ** 2) / maxdist
-    falloff = max(0.01, 1.0 - inner_radius)
-    t = np.clip((dist - inner_radius) / falloff, 0, 1) ** 1.6
-    alpha = (t * strength).astype(np.uint8)
-    arr = pygame.surfarray.pixels_alpha(surf)
-    arr[:, :] = alpha.T
-    del arr
-    return surf
+AMBIENT_LIGHT = (50, 52, 58)
 
 
-VIGNETTE = build_vignette(WIDTH, HEIGHT, 165, 0.18)
+def build_radial_light(inner_radius, first_fade=50, second_fade=50):
+    total_radius = inner_radius + first_fade + second_fade
+    diameter = total_radius * 2
+    light = pygame.Surface((diameter, diameter))
+    light.fill((0, 0, 0))
+    center = (total_radius, total_radius)
+
+    for radius in range(total_radius, inner_radius - 1, -2):
+        if radius > inner_radius + first_fade:
+            progress = (total_radius - radius) / max(1, second_fade)
+            value = int(78 + (150 - 78) * progress)
+        else:
+            progress = (inner_radius + first_fade - radius) / max(1, first_fade)
+            value = int(150 + (255 - 150) * progress)
+        pygame.draw.circle(light, (value, value, value), center, radius)
+
+    pygame.draw.circle(light, (255, 255, 255), center, inner_radius)
+    return light
+
+
+PLAYER_LIGHT = build_radial_light(250)
+STATIC_LIGHT = build_radial_light(200)
 
 
 def build_dust_sprite(size):
@@ -1044,6 +1051,7 @@ class Game:
     def __init__(self):
         self.state = "MENU"
         self.sound = SoundManager()
+        self.light_map = pygame.Surface((WIDTH, HEIGHT))
         pygame.mouse.set_visible(False)
         self.reset_game()
 
@@ -1129,9 +1137,9 @@ class Game:
             self.walls.append(candidate)
 
         self.lights = [
-            LightSource((WORLD_W * 0.3, WORLD_H * 0.3), 320),
-            LightSource((WORLD_W * 0.7, WORLD_H * 0.3), 320),
-            LightSource((WORLD_W * 0.5, WORLD_H * 0.7), 350)
+            LightSource((750, 750), 300), LightSource((1500, 750), 300), LightSource((2250, 750), 300),
+            LightSource((750, 1500), 300), LightSource((2250, 1500), 300),
+            LightSource((750, 2250), 300), LightSource((1500, 2250), 300), LightSource((2250, 2250), 300),
         ]
 
         for _ in range(8):
@@ -1827,6 +1835,29 @@ class Game:
             txt.set_alpha(alpha)
             screen.blit(txt, (WIDTH / 2 - txt.get_width() / 2, 75 + idx * 32))
 
+    def draw_lighting(self, offset):
+        self.light_map.fill(AMBIENT_LIGHT)
+
+        player_screen = self.player.pos - offset
+        player_radius = PLAYER_LIGHT.get_width() // 2
+        self.light_map.blit(
+            PLAYER_LIGHT,
+            player_screen - pygame.Vector2(player_radius, player_radius),
+            special_flags=pygame.BLEND_RGB_MAX,
+        )
+
+        static_radius = STATIC_LIGHT.get_width() // 2
+        for light in self.lights:
+            light_screen = light.pos - offset
+            if -static_radius <= light_screen.x <= WIDTH + static_radius and -static_radius <= light_screen.y <= HEIGHT + static_radius:
+                self.light_map.blit(
+                    STATIC_LIGHT,
+                    light_screen - pygame.Vector2(static_radius, static_radius),
+                    special_flags=pygame.BLEND_RGB_MAX,
+                )
+
+        screen.blit(self.light_map, (0, 0), special_flags=pygame.BLEND_RGB_MULT)
+
     def draw(self):
         offset = self.camera.get_offset()
         mouse_pos = pygame.Vector2(pygame.mouse.get_pos())
@@ -1855,7 +1886,7 @@ class Game:
         for d in self.damage_numbers: d.draw(screen, offset)
         for c in self.combo_popups: c.draw(screen, offset)
 
-        screen.blit(VIGNETTE, (0, 0))
+        self.draw_lighting(offset)
 
         if self.state == "PLAYING" and self.player.hp > 0 and self.player.hp / self.player.max_hp < 0.25:
             pulse = (math.sin(pygame.time.get_ticks() * 0.006) + 1) / 2

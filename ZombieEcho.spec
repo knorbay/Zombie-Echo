@@ -45,7 +45,7 @@ collection = COLLECT(
 app = BUNDLE(
     collection,
     name="Zombie Echo.app",
-    icon=None,
+    icon="assets/logo.png",
     bundle_identifier="com.knorbay.zombieecho",
     info_plist={"NSHighResolutionCapable": True},
 )
