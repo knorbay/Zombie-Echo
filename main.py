@@ -32,7 +32,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Zombie Echo: Those Left in the Dark")
 clock = pygame.time.Clock()
 
-C_BG = (20, 22, 28)
+C_BG = (17, 19, 24)
 C_WHITE = (240, 240, 240)
 C_BLACK = (0, 0, 0)
 C_RED = (220, 40, 40)
@@ -112,7 +112,7 @@ def build_vignette(w, h, strength=140):
     return surf
 
 
-VIGNETTE = build_vignette(WIDTH, HEIGHT, 65)
+VIGNETTE = build_vignette(WIDTH, HEIGHT, 82)
 
 
 def build_dust_sprite(size):
