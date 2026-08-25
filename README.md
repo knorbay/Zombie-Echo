@@ -34,6 +34,8 @@ artifact'ini indirip `Zombie Echo.app` dosyasını doğrudan açabilir.
 - Her dalga sonunda garantili ödül
 - Her 5 dalgada Juggernaut, Broodmother veya Reaper boss
 - Hasar veren dash, yakın saldırı ve patlayan variller
+- Yakın öldürmelerde mermi iadesi ve dash yenileme; kill zincirinde artan hareket/ateş temposu
+- Düşük canlı normal düşmanlara melee bitirici vuruş
 - Otomatik sarf malzemesi toplama ve kesintisiz silah değiştirme
 - Daha kısa bekleme süreleri ve hızlı dalga temposu
 - Duvarları dolaşan, oyuncunun hareketini öngören ve birbirinden ayrılan gelişmiş düşman davranışları

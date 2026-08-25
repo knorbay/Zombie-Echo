@@ -32,7 +32,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Zombie Echo: Those Left in the Dark")
 clock = pygame.time.Clock()
 
-C_BG = (13, 15, 19)
+C_BG = (7, 9, 12)
 C_WHITE = (240, 240, 240)
 C_BLACK = (0, 0, 0)
 C_RED = (220, 40, 40)
@@ -44,8 +44,8 @@ C_ORANGE = (255, 120, 30)
 C_PURPLE = (150, 50, 200)
 C_ACID = (100, 255, 50)
 C_CYAN = (80, 220, 255)
-C_WALL = (28, 33, 43)
-C_WALL_TOP = (45, 54, 70)
+C_WALL = (20, 24, 31)
+C_WALL_TOP = (34, 41, 54)
 
 try:
     FONT_SM = pygame.font.SysFont("trebuchetms", 18, True)
@@ -113,7 +113,7 @@ def build_vignette(w, h, strength=140, inner_radius=0.55):
     return surf
 
 
-VIGNETTE = build_vignette(WIDTH, HEIGHT, 118, 0.30)
+VIGNETTE = build_vignette(WIDTH, HEIGHT, 165, 0.18)
 
 
 def build_dust_sprite(size):
@@ -545,6 +545,8 @@ class Player:
         previous_pos = pygame.Vector2(self.pos)
 
         current_base = self.base_speed * 0.70 if self.slow_timer > 0 else self.base_speed
+        if self.combo_timer > 0 and self.combo >= 3:
+            current_base *= 1.0 + min(self.combo, 8) * 0.025
 
         if self.dash_timer > 0:
             self.dash_timer -= dt
@@ -1207,6 +1209,7 @@ class Game:
     def finish_zombie(self, zombie):
         if zombie not in self.zombies:
             return
+        close_kill = self.player.pos.distance_to(zombie.pos) <= 155 + zombie.radius
         self.spawn_particles(zombie.pos, C_RED, 20, 250, 0.6)
         for _ in range(3):
             offset = pygame.Vector2(random.uniform(-14, 14), random.uniform(-14, 14))
@@ -1221,6 +1224,10 @@ class Game:
             self.push_message(f"{zombie.boss_variant.upper()} ELIMINATED", C_YELLOW, 3.0)
         else:
             self.drop_loot(zombie.pos)
+        if close_kill:
+            self.player.dash_cooldown = max(0, self.player.dash_cooldown - 0.45)
+            self.player.weapon.ammo = min(self.player.weapon.mag_size, self.player.weapon.ammo + 1)
+            self.spawn_particles(zombie.pos, C_CYAN, 7, 160, 0.3)
         self.award_kill(zombie.type, zombie.pos)
         self.zombies.remove(zombie)
         self.hitstop_timer = max(self.hitstop_timer, 0.10 if zombie.type == "Boss" else 0.025)
@@ -1243,9 +1250,13 @@ class Game:
             if to_zombie.length() <= 96 + zombie.radius and angle <= 58:
                 hit_any = True
                 damage = int(self.player.melee_damage * self.player.dmg_mult)
+                execute = zombie.type != "Boss" and zombie.hp <= zombie.max_hp * 0.32
+                if execute:
+                    damage = max(damage, int(zombie.hp + 1))
                 zombie.hit(damage, aim_dir)
                 zombie.pos += aim_dir * 42
-                self.damage_numbers.append(DamageNumber(zombie.pos, damage, C_CYAN, zombie.hp <= 0))
+                hit_color = C_ORANGE if execute else C_CYAN
+                self.damage_numbers.append(DamageNumber(zombie.pos, damage, hit_color, zombie.hp <= 0))
                 if zombie.hp <= 0:
                     self.finish_zombie(zombie)
         if hit_any:
@@ -1263,7 +1274,7 @@ class Game:
 
     def award_kill(self, z_type, pos):
         base = 1000 if z_type == "Boss" else 100
-        self.player.combo_timer = 3.2
+        self.player.combo_timer = 4.0
         self.player.combo += 1
         mult = min(5, 1 + self.player.combo // 3)
         self.player.score += base * mult
@@ -1392,7 +1403,9 @@ class Game:
                 dir_vec = (mouse_pos - self.player.pos)
                 if dir_vec.length_squared() > 0:
                     dir_vec.normalize_ip()
-                    fire_rate_mult = 0.62 if self.player.overdrive_timer > 0 else 1.0
+                    overdrive_mult = 0.62 if self.player.overdrive_timer > 0 else 1.0
+                    combo_mult = max(0.72, 1.0 - min(self.player.combo, 8) * 0.035) if self.player.combo_timer > 0 else 1.0
+                    fire_rate_mult = overdrive_mult * combo_mult
                     if wp.shoot(fire_rate_mult):
                         if wp.name in ("Pistol", "Revolver"):
                             self.sound.play("pistol_fire", 0.7)
@@ -1533,7 +1546,7 @@ class Game:
                     zombie = self.spawn_zombie()
                 self.zombies.append(zombie)
                 self.zombies_to_spawn -= 1
-                self.spawn_timer = random.uniform(0.22, 0.75)
+                self.spawn_timer = random.uniform(0.18, 0.62)
 
         for p in self.acid_pools[:]:
             if not p.update(dt):
