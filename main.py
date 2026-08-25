@@ -32,7 +32,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Zombie Echo: Those Left in the Dark")
 clock = pygame.time.Clock()
 
-C_BG = (17, 19, 24)
+C_BG = (13, 15, 19)
 C_WHITE = (240, 240, 240)
 C_BLACK = (0, 0, 0)
 C_RED = (220, 40, 40)
@@ -44,8 +44,8 @@ C_ORANGE = (255, 120, 30)
 C_PURPLE = (150, 50, 200)
 C_ACID = (100, 255, 50)
 C_CYAN = (80, 220, 255)
-C_WALL = (34, 40, 51)
-C_WALL_TOP = (53, 63, 82)
+C_WALL = (28, 33, 43)
+C_WALL_TOP = (45, 54, 70)
 
 try:
     FONT_SM = pygame.font.SysFont("trebuchetms", 18, True)
@@ -97,14 +97,15 @@ class SoundManager:
                 sound.play()
 
 
-def build_vignette(w, h, strength=140):
+def build_vignette(w, h, strength=140, inner_radius=0.55):
     surf = pygame.Surface((w, h), pygame.SRCALPHA)
     surf.fill((0, 0, 0, 255))
     cx, cy = w / 2, h / 2
     maxdist = math.hypot(cx, cy)
     yy, xx = np.mgrid[0:h, 0:w]
     dist = np.sqrt((xx - cx) ** 2 + (yy - cy) ** 2) / maxdist
-    t = np.clip((dist - 0.55) / 0.45, 0, 1) ** 1.6
+    falloff = max(0.01, 1.0 - inner_radius)
+    t = np.clip((dist - inner_radius) / falloff, 0, 1) ** 1.6
     alpha = (t * strength).astype(np.uint8)
     arr = pygame.surfarray.pixels_alpha(surf)
     arr[:, :] = alpha.T
@@ -112,7 +113,7 @@ def build_vignette(w, h, strength=140):
     return surf
 
 
-VIGNETTE = build_vignette(WIDTH, HEIGHT, 82)
+VIGNETTE = build_vignette(WIDTH, HEIGHT, 118, 0.30)
 
 
 def build_dust_sprite(size):
