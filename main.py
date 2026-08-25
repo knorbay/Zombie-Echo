@@ -17,7 +17,7 @@ pygame.init()
 
 try:
     pygame.mixer.music.load(os.path.join(ASSET_DIR, "game_music6.mp3"))
-    pygame.mixer.music.set_volume(0.34)
+    pygame.mixer.music.set_volume(0.24)
     pygame.mixer.music.play(-1)
 except (pygame.error, OSError):
     pass
@@ -66,7 +66,29 @@ except:
 class SoundManager:
     def __init__(self):
         self.sounds = {}
+        self.channels = {}
+        self.last_played = {}
+        self.master_volume = 0.76
         self.path = ASSET_DIR
+        self.cooldowns_ms = {
+            "footsteps": 280,
+            "zombie": 320,
+            "reload": 180,
+            "pistol_fire": 45,
+            "rifle_fire": 38,
+            "shotgun_fire": 85,
+            "explosion": 110,
+            "pickup": 70,
+            "select": 70,
+            "error": 100,
+            "empty": 140,
+            "melee": 90,
+            "loot": 100,
+        }
+
+        if pygame.mixer.get_init() is None:
+            return
+        pygame.mixer.set_num_channels(16)
 
         files = {
             "pistol_fire": "pistolfire.mp3",
@@ -91,16 +113,41 @@ class SoundManager:
         for name, filename in files.items():
             path = os.path.join(self.path, filename)
             if os.path.exists(path):
-                self.sounds[name] = pygame.mixer.Sound(path)
+                try:
+                    self.sounds[name] = pygame.mixer.Sound(path)
+                except (pygame.error, OSError):
+                    pass
 
     def play(self, name, volume=1.0, maxtime=0):
         sound = self.sounds.get(name)
-        if sound:
-            sound.set_volume(volume)
+        if not sound or pygame.mixer.get_init() is None:
+            return
+
+        channel_key = name
+        if name.startswith("zombie"):
+            channel_key = "zombie"
+        elif name.endswith("_reload"):
+            channel_key = "reload"
+
+        now = pygame.time.get_ticks()
+        cooldown = self.cooldowns_ms.get(channel_key, 0)
+        if now - self.last_played.get(channel_key, -cooldown) < cooldown:
+            return
+
+        try:
+            previous = self.channels.get(channel_key)
+            if previous and previous.get_busy():
+                previous.stop()
+            channel = pygame.mixer.find_channel(True)
+            channel.set_volume(max(0.0, min(1.0, volume * self.master_volume)))
             if maxtime > 0:
-                sound.play(maxtime=maxtime)
+                channel.play(sound, maxtime=maxtime)
             else:
-                sound.play()
+                channel.play(sound)
+            self.channels[channel_key] = channel
+            self.last_played[channel_key] = now
+        except pygame.error:
+            pass
 
 
 AMBIENT_LIGHT = (50, 52, 58)
@@ -383,6 +430,7 @@ class Weapon:
         if self.ammo < self.mag_size and self.reserve > 0 and not self.is_reloading:
             self.is_reloading = True
             self.reload_timer = self.reload_time
+            self.just_started_reload = True
             return True
         return False
 
@@ -433,7 +481,8 @@ class AcidProjectile:
         self.pos = pygame.Vector2(pos)
         self.start_pos = pygame.Vector2(pos)
         self.target = pygame.Vector2(target_pos)
-        self.dir = (self.target - self.pos).normalize()
+        delta = self.target - self.pos
+        self.dir = delta.normalize() if delta.length_squared() else pygame.Vector2(1, 0)
         self.speed = 300
         self.alive = True
 
@@ -606,7 +655,7 @@ class Player:
                         self.pos.x = wall.rect.right + self.radius
                     else:
                         self.pos.x = wall.rect.left - self.radius
-                        player_rect.x = int(self.pos.x - self.radius)
+                    player_rect.x = int(self.pos.x - self.radius)
                 else:
                     if self.pos.y > wall.rect.centery:
                         self.pos.y = wall.rect.bottom + self.radius
@@ -1148,9 +1197,10 @@ class Game:
             self.walls.append(candidate)
 
         self.lights = [
-            LightSource((750, 750), 300), LightSource((1500, 750), 300), LightSource((2250, 750), 300),
-            LightSource((750, 1500), 300), LightSource((2250, 1500), 300),
-            LightSource((750, 2250), 300), LightSource((1500, 2250), 300), LightSource((2250, 2250), 300),
+            LightSource((850, 850), 300),
+            LightSource((2150, 850), 300),
+            LightSource((850, 2150), 300),
+            LightSource((2150, 2150), 300),
         ]
 
         for _ in range(8):
@@ -1368,8 +1418,7 @@ class Game:
                     if event.key == pygame.K_ESCAPE:
                         self.state = "PAUSED"
                     elif event.key == pygame.K_r:
-                        if self.player.weapon.reload():
-                            self.player.play_reload_sound(self.player.weapon.name)
+                        self.player.weapon.reload()
                     elif event.key in (pygame.K_i, pygame.K_TAB):
                         self.state = "INVENTORY"
                         self.sound.play("select", 0.35)

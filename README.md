@@ -2,59 +2,68 @@
 
 ![Zombie Echo logo](assets/logo.png)
 
-Sade dark temalı, hızlı tempolu bir Pygame arena-aksiyon oyunu.
+Zombie Echo is a fast top-down arena shooter built with Pygame. Fight through
+short, aggressive waves, turn close-range kills into momentum, collect new
+weapons, and survive a rotating boss encounter every five waves.
 
-## Çalıştırma
+## Screenshots
 
-PyCharm içinden `main.py` dosyasını çalıştırabilir veya proje klasöründe:
+![Main menu](screenshots/menu.png)
+
+![Combat](screenshots/combat.png)
+
+![Boss encounter](screenshots/boss.png)
+
+## Features
+
+- Seven weapons: Pistol, Revolver, SMG, Rifle, Shotgun, LMG, and Launcher
+- Three rotating bosses: Juggernaut, Broodmother, and Reaper
+- Dash damage, melee executions, explosive barrels, and combo momentum
+- Ammo, medkits, temporary boosts, weapon drops, and end-of-wave rewards
+- Enemies that flank, keep distance, navigate around walls, and separate cleanly
+- Layered player visibility with four sparse 300 px map lights
+- Dark, readable presentation with restrained HUD, music, and sound effects
+- No account, progression grind, rarity tiers, or level system
+
+## Controls
+
+| Input | Action |
+| --- | --- |
+| `WASD` | Move |
+| Left mouse button | Fire |
+| `R` | Reload |
+| `1-7` / mouse wheel | Switch weapon |
+| `SPACE` | Dash |
+| `Q` / right mouse button | Melee |
+| `H` | Use medkit |
+| `I` / `TAB` | Open loadout |
+| `E` | Pick up a weapon |
+| `ESC` | Pause |
+
+## Download
+
+The latest Apple Silicon macOS build is available from the repository's
+[GitHub Releases](https://github.com/knorbay/Zombie-Echo/releases). After
+extracting the archive, right-click **Zombie Echo.app** and choose **Open** the
+first time if macOS displays an unidentified developer warning.
+
+## Run from source
 
 ```bash
-.venv/bin/python main.py
+python3 -m pip install -r requirements.txt
+python3 main.py
 ```
 
-macOS kullanıcıları GitHub Actions tarafından oluşturulan `Zombie-Echo-macOS`
-artifact'ini indirip `Zombie Echo.app` dosyasını doğrudan açabilir.
-
-## Kontroller
-
-- `WASD`: Hareket
-- `Sol tık`: Ateş
-- `R`: Şarjör değiştir
-- `1-7` veya fare tekerleği: Silah seç
-- `SPACE`: Dash
-- `Q` veya `sağ tık`: Yakın mesafe itme saldırısı
-- `H`: Sağlık çantası kullan
-- `I` veya `TAB`: Envanter / loadout
-- `E`: Eşya al
-- `ESC`: Duraklat
-
-## Aksiyon güncellemesi
-
-- 7 silah: Pistol, Revolver, SMG, Rifle, Shotgun, LMG ve Launcher
-- Basit silah listesi ve cephane ekranı
-- Sağlık çantası, cephane ve geçici güçlendirmeler
-- Her dalga sonunda garantili ödül
-- Her 5 dalgada Juggernaut, Broodmother veya Reaper boss
-- Hasar veren dash, yakın saldırı ve patlayan variller
-- Yakın öldürmelerde mermi iadesi ve dash yenileme; kill zincirinde artan hareket/ateş temposu
-- Düşük canlı normal düşmanlara melee bitirici vuruş
-- Otomatik sarf malzemesi toplama ve kesintisiz silah değiştirme
-- Daha kısa bekleme süreleri ve hızlı dalga temposu
-- Duvarları dolaşan, oyuncunun hareketini öngören ve birbirinden ayrılan gelişmiş düşman davranışları
-- Sade daire/şekil görsel dili, kısa mermi izleri ve koyu harita dokusu
-- Oyuncuda 250 px tam görüş + iki adet 50 px geçiş bandı; harita lambalarında 300 px katmanlı ışık
-- Oyun boyunca döngüde çalan arka plan müziği
-- Yeni pickup, seçim, hata, loot ve yakın saldırı sesleri
-
-## Asset lisansları
-
-- Ek ses efektleri: Kenney.nl, CC0
-
-## macOS uygulaması oluşturma
+## Build the macOS app
 
 ```bash
 python3 -m pip install -r requirements.txt pyinstaller
 pyinstaller --noconfirm ZombieEcho.spec
 ```
 
-Uygulama `dist/Zombie Echo.app` olarak oluşur.
+The application is created at `dist/Zombie Echo.app`.
+
+## Credits
+
+- Game design and development: knorbay
+- Additional sound effects: [Kenney](https://kenney.nl/), CC0

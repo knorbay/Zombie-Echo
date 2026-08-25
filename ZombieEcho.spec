@@ -47,5 +47,9 @@ app = BUNDLE(
     name="Zombie Echo.app",
     icon="assets/logo.png",
     bundle_identifier="com.knorbay.zombieecho",
-    info_plist={"NSHighResolutionCapable": True},
+    info_plist={
+        "NSHighResolutionCapable": True,
+        "CFBundleShortVersionString": "1.0.0",
+        "CFBundleVersion": "1",
+    },
 )
