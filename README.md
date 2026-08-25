@@ -42,10 +42,10 @@ weapons, and survive a rotating boss encounter every five waves.
 
 ## Download
 
-The latest Apple Silicon macOS build is available from the repository's
-[GitHub Releases](https://github.com/knorbay/Zombie-Echo/releases). After
-extracting the archive, right-click **Zombie Echo.app** and choose **Open** the
-first time if macOS displays an unidentified developer warning.
+Windows x64, Linux x64, and Apple Silicon macOS builds are available from the
+repository's [GitHub Releases](https://github.com/knorbay/Zombie-Echo/releases).
+Mac users should right-click **Zombie Echo.app** and choose **Open** the first
+time if macOS displays an unidentified developer warning.
 
 ## Run from source
 

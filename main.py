@@ -2034,7 +2034,6 @@ class Game:
             )
             screen.blit(controls, (WIDTH / 2 - controls.get_width() / 2, HEIGHT / 2 + 72))
 
-
 if __name__ == "__main__":
     game = Game()
     while True:

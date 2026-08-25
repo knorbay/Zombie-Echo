@@ -36,7 +36,7 @@ There are no rarity tiers, account systems, or progression grind. Pick up a weap
 
 ### Download note
 
-The current download is for Apple Silicon Macs. Extract the ZIP, then right-click **Zombie Echo.app** and choose **Open** the first time if macOS displays an unidentified developer warning.
+Downloads are available for Windows x64, Linux x64, and Apple Silicon Macs. Mac users should extract the ZIP, then right-click **Zombie Echo.app** and choose **Open** the first time if macOS displays an unidentified developer warning.
 
 ## Suggested metadata
 
@@ -44,6 +44,6 @@ The current download is for Apple Silicon Macs. Extract the ZIP, then right-clic
 - Kind of project: Downloadable
 - Release status: Released
 - Pricing: Free or donate
-- Platforms: macOS
+- Platforms: Windows, Linux, macOS
 - Genre: Shooter, Action
 - Tags: Top-Down, Zombies, Arena Shooter, Singleplayer, Dark, Arcade

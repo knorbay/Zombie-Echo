@@ -1,5 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+import sys
+
 a = Analysis(
     ["main.py"],
     pathex=[],
@@ -30,6 +32,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon="assets/logo.png",
 )
 
 collection = COLLECT(
@@ -42,14 +45,15 @@ collection = COLLECT(
     name="Zombie Echo",
 )
 
-app = BUNDLE(
-    collection,
-    name="Zombie Echo.app",
-    icon="assets/logo.png",
-    bundle_identifier="com.knorbay.zombieecho",
-    info_plist={
-        "NSHighResolutionCapable": True,
-        "CFBundleShortVersionString": "1.0.0",
-        "CFBundleVersion": "1",
-    },
-)
+if sys.platform == "darwin":
+    app = BUNDLE(
+        collection,
+        name="Zombie Echo.app",
+        icon="assets/logo.png",
+        bundle_identifier="com.knorbay.zombieecho",
+        info_plist={
+            "NSHighResolutionCapable": True,
+            "CFBundleShortVersionString": "1.0.0",
+            "CFBundleVersion": "1",
+        },
+    )

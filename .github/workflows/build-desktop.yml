@@ -1,0 +1,71 @@
+name: Build desktop apps
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            label: macOS Apple Silicon
+            artifact: Zombie-Echo-macOS-arm64
+            package: Zombie-Echo-macOS-arm64-v1.0.0.zip
+          - os: windows-latest
+            label: Windows x64
+            artifact: Zombie-Echo-Windows-x64
+            package: Zombie-Echo-Windows-x64-v1.0.0.zip
+          - os: ubuntu-latest
+            label: Linux x64
+            artifact: Zombie-Echo-Linux-x64
+            package: Zombie-Echo-Linux-x64-v1.0.0.zip
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt pyinstaller
+
+      - name: Build application
+        run: pyinstaller --noconfirm ZombieEcho.spec
+
+      - name: Package macOS application
+        if: runner.os == 'macOS'
+        run: ditto -c -k --sequesterRsrc --keepParent "dist/Zombie Echo.app" "${{ matrix.package }}"
+
+      - name: Package Windows application
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: Compress-Archive -Path "dist/Zombie Echo" -DestinationPath "${{ matrix.package }}"
+
+      - name: Package Linux application
+        if: runner.os == 'Linux'
+        run: |
+          chmod +x "dist/Zombie Echo/Zombie Echo"
+          cd dist
+          zip -r "../${{ matrix.package }}" "Zombie Echo"
+
+      - name: Upload application
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.package }}
+          if-no-files-found: error
+          retention-days: 14
